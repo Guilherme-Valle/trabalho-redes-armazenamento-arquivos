@@ -17,6 +17,7 @@ while True:
     # Envia mensagem para o cliente
     connection.send(f'Bem-vindo ao servidor, {address[0]} ' .encode())
 
+    # Recebe arquivo do cliente
     recv_data = connection.recv(1024).decode('utf-8')
 
     print(f'Conteúdo do arquivo recebido: {recv_data}')
