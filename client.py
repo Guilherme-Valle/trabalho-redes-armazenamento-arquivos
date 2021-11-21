@@ -1,13 +1,13 @@
 import socket
 import sys
 
-# Create a socket object
+# Cria um objeto socket
 client_socket = socket.socket()
 
-# Define the port on which you want to connect
+# Define a porta da conexão
 port = 12345
 
-# connect to the server on local computer
+# Conecta com a porta na conexão local
 client_socket.connect(('localhost', port))
 
 file = open('example_file.txt', 'rb')
@@ -16,8 +16,8 @@ file_data = file.read(1024)
 
 client_socket.send(file_data)
 
-# receive data from the server and decoding to get the string.
+# Receve dados do servidor e printa na tela
 print(client_socket.recv(1024).decode())
 
-# close the connection
+# Fecha a conexão
 client_socket.close()

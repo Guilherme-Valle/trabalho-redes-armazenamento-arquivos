@@ -5,24 +5,24 @@ server_socket = socket.socket()
 port = 12345
 
 server_socket.bind(('localhost', port))
-print("socket binded to %s" %(port))
+print("socket na porta %s" %(port))
 
 server_socket.listen(5)
-print("socket is listening")
+print("socket ouvindo")
 
 while True:
     connection, address = server_socket.accept()
-    print('Got connection from', address)
+    print('Conectado com ', address)
 
-    # send a thank you message to the client. encoding to send byte type.
-    connection.send(f'Welcome to the server, {address[0]} ' .encode())
+    # Envia mensagem para o cliente
+    connection.send(f'Bem-vindo ao servidor, {address[0]} ' .encode())
 
     recv_data = connection.recv(1024).decode('utf-8')
 
-    print(f'File received: {recv_data}')
+    print(f'Conteúdo do arquivo recebido: {recv_data}')
 
-    # Close the connection with the client
+    # Fecha a conexão com o cliente
     connection.close()
 
-    # Breaking once connection closed
+    # Finaliza o loop quando a conexão é fechada
     break
