@@ -1,37 +1,55 @@
 import socket
 import sys
 import time
-# Cria um objeto socket
-client_socket = socket.socket()
+import json
 
-# Define a porta da conexão
-port = 12345
+PORT = 12345
+BYTES_PER_MESSAGES = 4096
 
-# Conecta com a porta na conexão local
-client_socket.connect(('localhost', port))
+def close(sock):
+     sock.close()
 
-# Nome do arquivo
-file_name = 'example_file.txt'
+def read_file():
+    filename = None
+    file_content = None
 
-# Arquivo
-file = open(file_name, 'rb')
-file_data = file.read(1024)
+    while filename == None:
+        try:
+            filename = str(input('Digite o nome do arquivo: '))
 
-# Numero de copias
-copies = '2'
+            if filename in ['\n', '']:
+                print('aborting')
+                sys.exit(0)
 
-client_socket.send(file_name.encode())
+            file = open(filename, 'rb')
+            return filename, str(file.read(1024))
+        except:
+            print('Houve um erro ao tentar ler o arquivo. Tente novamente.')
 
-time.sleep(1)
+def open_socket_connection():
+    client_socket = socket.socket()
+    tryAgain = 's'
 
-client_socket.send(file_data)
+    while tryAgain in ['s', 'S', '']:
+        try:
+            client_socket.connect(('localhost', PORT))
 
-time.sleep(1)
+            return client_socket
+        except ConnectionRefusedError:
+            print('Não foi possivel iniciar conexão. Verifique se o servidor está rodando na porta {port}'.format(port=PORT))
+            tryAgain = str(input('Tentar novamente? (S/n) '))
+            
+    sys.exit()
 
-client_socket.send(copies.encode())
+if __name__ == '__main__':
+    conection = open_socket_connection()
+    filename, content = read_file()
+    copies = int(input('Numero de cópias: '))
 
-# Receve dados do servidor e printa na tela
-print(client_socket.recv(1024).decode())
+    message = json.dumps({
+        'filename': filename,
+        'content': content,
+        'copies': copies
+    },  ensure_ascii=False).encode('utf8')
 
-# Fecha a conexão
-client_socket.close()
+    conection.send(message)

@@ -1,12 +1,12 @@
-import socket
-import shutil
+import socket, shutil, json
 
 server_socket = socket.socket()
 
-port = 12345
+PORT = 12345
+BYTES_PER_MESSAGES = 4096
 
-server_socket.bind(('localhost', port))
-print("socket na porta %s" %(port))
+server_socket.bind(('localhost', PORT))
+print("socket na porta %s" %(PORT))
 
 server_socket.listen(5)
 print("socket ouvindo")
@@ -19,14 +19,10 @@ while True:
     connection.send(f'Bem-vindo ao servidor, {address[0]} ' .encode())
 
     # Recebe arquivo do cliente
-    file_name = connection.recv(1024).decode('utf-8')
-    print(f'Nome do arquivo: {file_name}')
+    file = connection.recv(BYTES_PER_MESSAGES).decode('utf-8')
+    file_info = json.loads(file)
 
-    file_content = connection.recv(1024).decode('utf-8')
-    print(f'Conteúdo do arquivo recebido: {file_content}')
-
-    file_copies = connection.recv(1024).decode('utf-8')
-    print(f'Número de cópias: {file_copies}')
+    print('\n\n\nNome do arquivo: {filename}\nCopias: {copies}\nConteúdo: {content}'.format(**file_info))
 
 
 
