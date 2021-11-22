@@ -1,4 +1,5 @@
 import socket
+import shutil
 
 server_socket = socket.socket()
 
@@ -18,9 +19,16 @@ while True:
     connection.send(f'Bem-vindo ao servidor, {address[0]} ' .encode())
 
     # Recebe arquivo do cliente
-    recv_data = connection.recv(1024).decode('utf-8')
+    file_name = connection.recv(1024).decode('utf-8')
+    print(f'Nome do arquivo: {file_name}')
 
-    print(f'Conteúdo do arquivo recebido: {recv_data}')
+    file_content = connection.recv(1024).decode('utf-8')
+    print(f'Conteúdo do arquivo recebido: {file_content}')
+
+    file_copies = connection.recv(1024).decode('utf-8')
+    print(f'Número de cópias: {file_copies}')
+
+
 
     # Fecha a conexão com o cliente
     connection.close()
