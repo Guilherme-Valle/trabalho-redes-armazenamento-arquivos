@@ -2,8 +2,10 @@ import socket
 import sys
 import time
 import json
+import os
+from simple_term_menu import TerminalMenu
 
-PORT = 12345
+PORT = 4444
 BYTES_PER_MESSAGES = 4096
 
 def close(sock):
@@ -41,15 +43,48 @@ def open_socket_connection():
             
     sys.exit()
 
-if __name__ == '__main__':
+def upload():
     conection = open_socket_connection()
     filename, content = read_file()
     copies = int(input('Numero de cópias: '))
 
     message = json.dumps({
+        'method': 'upload',
         'filename': filename,
         'content': content,
         'copies': copies
     },  ensure_ascii=False).encode('utf8')
 
     conection.send(message)
+
+def edit():
+    conection = open_socket_connection()
+    filename = str(input('Nome do arquivo: '))
+    copies = int(input('Numero de cópias: '))
+    message = json.dumps({
+        'method': 'edit',
+        'filename': filename,
+        'copies': copies
+    },  ensure_ascii=False).encode('utf8')
+
+    conection.send(message)
+
+def do_exit():
+     sys.exit(0)
+
+def menu():
+    options = [
+        {'title': "Enviar novo arquivo", "action" :upload},
+        {'title': "Atualizar Numero de cópias", "action" :edit},
+        {'title': "Sair", "action": do_exit}
+    ]
+    terminal_menu = TerminalMenu([option['title'] for option in options])
+    selected_index = terminal_menu.show()
+    selected = options[selected_index]
+    selected['action']()
+
+
+if __name__ == '__main__':
+    while True:
+        menu()
+        os.system('cls' if os.name == 'nt' else 'clear')

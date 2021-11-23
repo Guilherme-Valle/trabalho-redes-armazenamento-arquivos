@@ -1,8 +1,9 @@
-import socket, shutil, json
+import socket, shutil, json, time
+import threading
 
-server_socket = socket.socket()
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-PORT = 12345
+PORT = 4444
 BYTES_PER_MESSAGES = 4096
 
 server_socket.bind(('localhost', PORT))
@@ -11,23 +12,27 @@ print("socket na porta %s" %(PORT))
 server_socket.listen(5)
 print("socket ouvindo")
 
+
+def handle_client(message, addr):
+    try:
+       response = handle_message(message)
+    except BrokenPipeError:
+        print('[DEBUG] addr:', addr, 'Connection closed by client?')
+    except Exception as ex:
+        print('[DEBUG] addr:', addr, 'Exception:', ex, )
+    finally:
+        return
+
+def handle_message(message):
+    print(message)
+
 while True:
     connection, address = server_socket.accept()
     print('Conectado com ', address)
 
-    # Envia mensagem para o cliente
-    connection.send(f'Bem-vindo ao servidor, {address[0]} ' .encode())
+    message = connection.recv(BYTES_PER_MESSAGES).decode('utf-8')
 
-    # Recebe arquivo do cliente
-    file = connection.recv(BYTES_PER_MESSAGES).decode('utf-8')
-    file_info = json.loads(file)
-
-    print('\n\n\nNome do arquivo: {filename}\nCopias: {copies}\nConteúdo: {content}'.format(**file_info))
-
-
-
-    # Fecha a conexão com o cliente
-    connection.close()
-
-    # Finaliza o loop quando a conexão é fechada
-    break
+    if message:
+        t = threading.Thread(target=handle_client, args=(message, address))
+        t.start()
+        t.join()
