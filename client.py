@@ -4,6 +4,7 @@ import time
 import json
 import os
 from simple_term_menu import TerminalMenu
+from ast import literal_eval
 
 PORT = 8888
 BYTES_PER_MESSAGES = 4096
@@ -95,14 +96,30 @@ def request():
     time.sleep(4)
 
 
+def logs():
+    conection = open_socket_connection()
+    message = json.dumps({
+        'method': 'logs'
+    }, ensure_ascii=False).encode('utf-8')
+    conection.send(message)
+
+    received_logs = conection.recv(BYTES_PER_MESSAGES).decode('utf-8')
+    for log in literal_eval(received_logs):
+        print(log)
+
+    time.sleep(2)
+
+
 def do_exit():
      sys.exit(0)
+
 
 def menu():
     options = [
         {'title': "Enviar novo arquivo", "action" :upload},
         {'title': "Atualizar Numero de cópias", "action" :edit},
         {'title': "Solicitar arquivo", "action": request},
+        {'title': "Exibir logs", "action": logs},
         {'title': "Sair", "action": do_exit}
     ]
     terminal_menu = TerminalMenu([option['title'] for option in options])
@@ -114,4 +131,3 @@ def menu():
 if __name__ == '__main__':
     while True:
         menu()
-        os.system('cls' if os.name == 'nt' else 'clear')

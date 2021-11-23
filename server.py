@@ -117,13 +117,25 @@ def enviar_arquivo(message):
     return {'filename': filename, 'content': None, 'error': 'Not Found'}
 
 
+def enviar_log():
+    logs = []
+    with open(LOG_FILENAME) as file:
+        while line := file.readline().rstrip():
+            logs.append(line)
+
+    return logs
+
+
 def handle_client(connection, message, addr):
     try:
-       response = handle_message(json.loads(message))
-       save_log(json.loads(message))
+       message = json.loads(message)
+       response = handle_message(message)
+
+       if message['method'] != 'logs':
+           save_log(message)
 
        if response:
-           connection.send(json.dumps(response).encode())
+           connection.send(json.dumps(response).encode('utf-8'))
 
     except BrokenPipeError:
         print('[DEBUG] addr:', addr, 'Connection closed by client?')
@@ -132,7 +144,9 @@ def handle_client(connection, message, addr):
     finally:
         return
 
+
 def handle_message(message):
+    print(message)
     if message["method"] == 'upload':
         receber_arquivo(message)
         return None
@@ -141,6 +155,9 @@ def handle_message(message):
         return None
     if message["method"] == 'request':
         return enviar_arquivo(message)
+    if message["method"] == 'logs':
+        return enviar_log()
+
 
 if __name__ == '__main__':
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
