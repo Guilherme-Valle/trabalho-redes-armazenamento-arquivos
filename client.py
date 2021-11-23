@@ -5,7 +5,7 @@ import json
 import os
 from simple_term_menu import TerminalMenu
 
-PORT = 4444
+PORT = 8888
 BYTES_PER_MESSAGES = 4096
 
 def close(sock):
@@ -53,7 +53,7 @@ def upload():
         'filename': filename,
         'content': content,
         'copies': copies
-    },  ensure_ascii=False).encode('utf8')
+    },  ensure_ascii=False).encode('utf-8')
 
     conection.send(message)
 
@@ -65,9 +65,35 @@ def edit():
         'method': 'edit',
         'filename': filename,
         'copies': copies
-    },  ensure_ascii=False).encode('utf8')
+    },  ensure_ascii=False).encode('utf-8')
 
     conection.send(message)
+
+
+def request():
+    conection = open_socket_connection()
+    filename = str(input('Digite o nome do arquivo: '))
+    message = json.dumps({
+         'method': 'request',
+         'filename': filename
+         },ensure_ascii=False).encode('utf-8')
+        
+    conection.send(message)
+
+    message = conection.recv(BYTES_PER_MESSAGES).decode('utf-8')
+    file_info = json.loads(message)
+
+    if file_info['content']:
+        if 'client' not in os.listdir():
+            os.mkdir('client')
+            
+        f = open('client/{filename}'.format(filename=filename), 'w')
+        f.write(file_info['content'])
+    else:
+        print('Arquivo Não encontrado')
+
+    time.sleep(4)
+
 
 def do_exit():
      sys.exit(0)
@@ -76,6 +102,7 @@ def menu():
     options = [
         {'title': "Enviar novo arquivo", "action" :upload},
         {'title': "Atualizar Numero de cópias", "action" :edit},
+        {'title': "Solicitar arquivo", "action": request},
         {'title': "Sair", "action": do_exit}
     ]
     terminal_menu = TerminalMenu([option['title'] for option in options])

@@ -1,23 +1,16 @@
 import socket, shutil, json, time, os
 from datetime import datetime
 import threading
+from pathlib import Path
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-PORT = 4444
+PORT = 8888
 BYTES_PER_MESSAGES = 4096
 LOG_FILENAME = 'log.txt'
-
-server_socket.bind(('localhost', PORT))
-print("socket na porta %s" %(PORT))
-
-server_socket.listen(5)
-print("socket ouvindo")
 
 def adicionar_arquivo_servidores(antigo_registro_gerenciamento, file_info):
     if antigo_registro_gerenciamento is None:
         for number in range(int(file_info["copies"])):
-            nome_servidor = "servidores\\armazenamento_servidor_" + str(number)
+            nome_servidor = "servidores/armazenamento_servidor_" + str(number)
             replicar_arquivo(nome_servidor, file_info["filename"], file_info["content"])
 
     else:
@@ -25,14 +18,14 @@ def adicionar_arquivo_servidores(antigo_registro_gerenciamento, file_info):
             servidores_para_excluir = range(int(file_info["copies"]), int(antigo_registro_gerenciamento["copies"]))
 
             for numero_servidor in servidores_para_excluir:
-                nome_servidor = "servidores\\armazenamento_servidor_" + str(numero_servidor)
+                nome_servidor = "servidores/armazenamento_servidor_" + str(numero_servidor)
                 caminho_arquivo = os.path.join(nome_servidor, file_info["filename"])
                 os.remove(caminho_arquivo)
         else:
             servidores_para_adicionar = range(int(antigo_registro_gerenciamento["copies"]), int(file_info["copies"]))
-            caminho_arquivo_1 = os.path.join("servidores\\armazenamento_servidor_" + str(0), file_info["filename"])
+            caminho_arquivo_1 = os.path.join("servidores/armazenamento_servidor_" + str(0), file_info["filename"])
             for numero_servidor in servidores_para_adicionar:
-                nome_servidor = "servidores\\armazenamento_servidor_" + str(numero_servidor)
+                nome_servidor = "servidores/armazenamento_servidor_" + str(numero_servidor)
                 servidor_existe = os.path.isdir(nome_servidor)
                 if not servidor_existe:
                     os.mkdir(nome_servidor)
@@ -42,6 +35,7 @@ def receber_arquivo(file_info):
     # Recebe arquivo do cliente
 
     print('\n\n\nNome do arquivo: {filename}\nCopias: {copies}\nConteúdo: {content}'.format(**file_info))
+    # print(file_info['content'].decode())
 
     arquivo_gerenciamento = open('arquivo_gerenciamento.json', 'r')
     conteudo_arquivo_gerenciamento = json.loads(arquivo_gerenciamento.read())
@@ -91,25 +85,46 @@ def replicar_arquivo(nome_servidor, nome_arquivo, conteudo_arquivo):
     caminho_arquivo = os.path.join(nome_servidor, nome_arquivo)
     escrevendo_arquivo = open(caminho_arquivo, 'wb')
 
-    escrevendo_arquivo.write(conteudo_arquivo.encode('utf8'))
+    escrevendo_arquivo.write(conteudo_arquivo.encode('utf-8'))
     escrevendo_arquivo.close()
     
-
 def save_log(action):
+    if 'copies' in action:
+        copies = str(action['copies'])
+    else:
+        copies = ''
+
     with open(LOG_FILENAME, 'a+') as file:
-        action = json.loads(action)
         log = 'Operation: ' + action['method'] + ';' + \
               'Filename: ' + action['filename'] + ';' + \
-              'Copies: ' + str(action['copies']) + ';' + \
+              'Copies: ' + copies + ';' + \
               'Datetime: ' + datetime.now().strftime("%d/%m/%Y %H:%M:%S") + "\n"
         file.write(log)
         file.close()
 
+def enviar_arquivo(message):
+    filename = message['filename']
+    for path, subdirs, files in os.walk(str(Path().absolute()) +'/servidores'):
+        try:
+            print(path+'/'+filename)
+            file = open(path+'/'+filename, 'r')
 
-def handle_client(message, addr):
+            content = file.read()
+            return {'filename': filename, 'content': content}
+        except Exception as e:
+            print("Não encontrado em: " + path)
+            continue
+    return {'filename': filename, 'content': None, 'error': 'Not Found'}
+
+
+def handle_client(connection, message, addr):
     try:
-       response = handle_message(message)
-       save_log(message)
+       response = handle_message(json.loads(message))
+       save_log(json.loads(message))
+
+       if response:
+           connection.send(json.dumps(response).encode())
+
     except BrokenPipeError:
         print('[DEBUG] addr:', addr, 'Connection closed by client?')
     except Exception as ex:
@@ -118,19 +133,33 @@ def handle_client(message, addr):
         return
 
 def handle_message(message):
-    message_json = json.loads(message)
-    if message_json["method"] == 'upload':
-        receber_arquivo(message_json)
-    if message_json["method"] == 'edit':
-        editar_replicas(message_json)
+    if message["method"] == 'upload':
+        receber_arquivo(message)
+        return None
+    if message["method"] == 'edit':
+        editar_replicas(message)
+        return None
+    if message["method"] == 'request':
+        return enviar_arquivo(message)
 
-while True:
-    connection, address = server_socket.accept()
-    print('Conectado com ', address)
+if __name__ == '__main__':
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    message = connection.recv(BYTES_PER_MESSAGES).decode('utf-8')
+    server_socket.bind(('localhost', PORT))
+    print("socket na porta %s" %(PORT))
 
-    if message:
-        t = threading.Thread(target=handle_client, args=(message, address))
-        t.start()
-        t.join()
+    server_socket.listen(5)
+    print("socket ouvindo")
+
+    # enviar_arquivo({'filename': 'arq1.txt'})
+
+    while True:
+        connection, address = server_socket.accept()
+        print('Conectado com ', address)
+
+        message = connection.recv(BYTES_PER_MESSAGES).decode('utf-8')
+
+        if message:
+            t = threading.Thread(target=handle_client, args=(connection, message, address))
+            t.start()
+            t.join()
