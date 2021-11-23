@@ -1,0 +1,10 @@
+Operation: upload;Filename: example_file.txt;Copies: 3;Datetime: 22/11/2021 23:54:17
+Operation: edit;Filename: example_file.txt;Copies: 5;Datetime: 23/11/2021 00:10:35
+Operation: edit;Filename: example_file.txt;Copies: 1;Datetime: 23/11/2021 00:10:57
+Operation: edit;Filename: example_file.txt;Copies: 8;Datetime: 23/11/2021 00:11:09
+Operation: edit;Filename: example_file.txt;Copies: 8;Datetime: 23/11/2021 00:12:03
+Operation: edit;Filename: example_file.txt;Copies: 9;Datetime: 23/11/2021 00:12:18
+Operation: edit;Filename: example_file.txt;Copies: 9;Datetime: 23/11/2021 00:12:52
+Operation: edit;Filename: example_file.txt;Copies: 9;Datetime: 23/11/2021 00:13:06
+Operation: edit;Filename: example_file.txt;Copies: 9;Datetime: 23/11/2021 00:13:27
+Operation: edit;Filename: example_file.txt;Copies: 1;Datetime: 23/11/2021 00:13:38
