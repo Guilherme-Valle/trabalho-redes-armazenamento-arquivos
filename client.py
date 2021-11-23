@@ -24,7 +24,7 @@ def read_file():
                 print('aborting')
                 sys.exit(0)
 
-            file = open(filename, 'rb')
+            file = open(filename, 'r')
             return filename, str(file.read(1024))
         except:
             print('Houve um erro ao tentar ler o arquivo. Tente novamente.')
@@ -124,7 +124,7 @@ def menu():
     ]
     terminal_menu = TerminalMenu([option['title'] for option in options])
     selected_index = terminal_menu.show()
-    selected = options[selected_index]
+    selected = options[0]
     selected['action']()
 
 
