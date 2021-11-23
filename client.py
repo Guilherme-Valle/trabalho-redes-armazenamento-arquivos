@@ -124,7 +124,7 @@ def menu():
     ]
     terminal_menu = TerminalMenu([option['title'] for option in options])
     selected_index = terminal_menu.show()
-    selected = options[0]
+    selected = options[selected_index]
     selected['action']()
 
 
