@@ -3,7 +3,7 @@ import sys
 import time
 import json
 import os
-from simple_term_menu import TerminalMenu
+#from simple_term_menu import TerminalMenu
 
 PORT = 8888
 BYTES_PER_MESSAGES = 4096
@@ -23,7 +23,7 @@ def read_file():
                 print('aborting')
                 sys.exit(0)
 
-            file = open(filename, 'rb')
+            file = open(filename, 'r')
             return filename, str(file.read(1024))
         except:
             print('Houve um erro ao tentar ler o arquivo. Tente novamente.')
@@ -105,9 +105,9 @@ def menu():
         {'title': "Solicitar arquivo", "action": request},
         {'title': "Sair", "action": do_exit}
     ]
-    terminal_menu = TerminalMenu([option['title'] for option in options])
-    selected_index = terminal_menu.show()
-    selected = options[selected_index]
+    #terminal_menu = TerminalMenu([option['title'] for option in options])
+    #selected_index = terminal_menu.show()
+    selected = options[0]
     selected['action']()
 
 
