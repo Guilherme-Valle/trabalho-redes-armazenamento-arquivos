@@ -6,7 +6,7 @@ import os
 from simple_term_menu import TerminalMenu
 from ast import literal_eval
 
-PORT = 8888
+PORT = 1234
 BYTES_PER_MESSAGES = 4096
 
 def close(sock):
@@ -90,6 +90,7 @@ def request():
             
         f = open('client/{filename}'.format(filename=filename), 'w')
         f.write(file_info['content'])
+        print(file_info['content'])
     else:
         print('Arquivo Não encontrado')
 
@@ -126,6 +127,8 @@ def menu():
     selected_index = terminal_menu.show()
     selected = options[selected_index]
     selected['action']()
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ from datetime import datetime
 import threading
 from pathlib import Path
 
-PORT = 8888
+PORT = 1234
 BYTES_PER_MESSAGES = 4096
 LOG_FILENAME = 'log.txt'
 
